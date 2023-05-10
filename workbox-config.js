@@ -20,6 +20,6 @@ module.exports = {
         'third-party/**/*',
         '.gitignore'
     ],
-    swDest: './sw.js',
+    swDest: 'dist/sw.js',
     swSrc: 'sw-src.js',
 };

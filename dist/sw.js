@@ -1,19 +1,10 @@
 importScripts("https://storage.googleapis.com/workbox-cdn/releases/4.3.1/workbox-sw.js");
-importScripts("https://storage.googleapis.com/workbox-cdn/releases/4.3.1/workbox-routing.dev.js");
-importScripts("https://storage.googleapis.com/workbox-cdn/releases/4.3.1/workbox-strategies.dev.js");
 
-workbox.precaching.precacheAndRoute(self.__WB_MANIFEST, {});
+workbox.precaching.precacheAndRoute([], {});
 
 let cachingProgress = 0;
 
 self.addEventListener("install", async function (e) {
-  self.addEventListener("message", async (event) => {
-    // if (event.data.type === "Registration") {
-    //   if (!!!caches.keys().length) {
-    //     let cacheName = await getCacheName(event.data.value);
-    //   }
-    // }
-  });
   self.skipWaiting();
 });
 

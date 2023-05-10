@@ -1,19 +1,10 @@
 importScripts("https://storage.googleapis.com/workbox-cdn/releases/4.3.1/workbox-sw.js");
-importScripts("https://storage.googleapis.com/workbox-cdn/releases/4.3.1/workbox-routing.dev.js");
-importScripts("https://storage.googleapis.com/workbox-cdn/releases/4.3.1/workbox-strategies.dev.js");
 
 workbox.precaching.precacheAndRoute(self.__WB_MANIFEST, {});
 
 let cachingProgress = 0;
 
 self.addEventListener("install", async function (e) {
-  self.addEventListener("message", async (event) => {
-    // if (event.data.type === "Registration") {
-    //   if (!!!caches.keys().length) {
-    //     let cacheName = await getCacheName(event.data.value);
-    //   }
-    // }
-  });
   self.skipWaiting();
 });
 
@@ -60,10 +51,10 @@ self.addEventListener("fetch", function (event) {
         const requestString = event.request.url.toLowerCase();
         // If the response is valid, clone it and store it in the cache
         if (response.ok) {
-          let isContentCached = localStorage.getItem("is_cached");
-          if (isContentCached === null) {
-            localStorage.setItem("is_cached", "true");
-          }
+          // let isContentCached = localStorage.getItem("is_cached");
+          // if (isContentCached === null) {
+          //   localStorage.setItem("is_cached", "true");
+          // }
           if (requestString.indexOf('bookcontent') !== -1) {
             console.log('Book content request');
             const segments = requestString.split('/');
