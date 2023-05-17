@@ -56,7 +56,7 @@ import { log } from "console";
                         // value: this.lang,
                         // });
                     }
-                    
+                    this.readLanguageDataFromCacheAndNotifyAndroidApp();
                 });
 
                 wb.addEventListener("activated", (event) => {
@@ -89,11 +89,11 @@ import { log } from "console";
 
     readLanguageDataFromCacheAndNotifyAndroidApp() {
         //@ts-ignore
-        // if (window.Android) {
-        //     let isContentCached: boolean = localStorage.getItem(this.isCached)! === "true";
-        //     //@ts-ignore
-        //     window.Android.cachedStatus(isContentCached);
-        // }
+        if (window.Android) {
+            // let isContentCached: boolean = localStorage.getItem(this.isCached)! === "true";
+            //@ts-ignore
+            window.Android.cachedStatus(true);
+        }
     }
 
     enforceLandscapeMode() {
