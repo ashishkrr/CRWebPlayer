@@ -1,6 +1,6 @@
 
 // Class that handles the playback of the whole book
-import { Book, BookType, Page, TextElement, ImageElement, AudioElement  } from "../Models/Models";
+import { Book, BookType, Page, TextElement, ImageElement, AudioElement, AudioTimestamps, WordTimestampElement  } from "../Models/Models";
 import { Splide } from "@splidejs/splide";
 
 export class PlayBackEngine {
@@ -18,6 +18,8 @@ export class PlayBackEngine {
 
     currentBookType: BookType;
 
+    book: Book;
+
     constructor(imagesPath: string, audioPath: string) {
         this.imagesPath = imagesPath;
         this.audioPath = audioPath;
@@ -25,6 +27,18 @@ export class PlayBackEngine {
         this.splideHandle = new Splide('.splide', {
             fixedHeight: window.innerHeight - 20,
         }).mount();
+
+        this.splideHandle.on('move', (newIndex, oldIndex, destIndex) => {
+            console.log("move");
+            this.transitioningToPage = true;
+        });
+
+        this.splideHandle.on('moved', (currentIndex, prevIndex, destIndex) => {
+            console.log("moved");
+            this.currentPage = currentIndex;
+            this.transitioningToPage = false;
+        });
+
         this.addPageResizeListener();
     }
 
@@ -36,6 +50,7 @@ export class PlayBackEngine {
     }
 
     initializeBook(book: Book) {
+        this.book = book;
         this.currentBookType = book.bookType;
         this.numberOfPages = book.pages.length;
 
@@ -47,6 +62,8 @@ export class PlayBackEngine {
     }
 
     initializeCuriousReaderBook(book: Book) {
+        this.numberOfPages = book.pages.length;
+
         for (let i = 0; i < book.pages.length; i++) {
             const slide = document.createElement('li');
             slide.classList.add('splide__slide');
@@ -56,22 +73,8 @@ export class PlayBackEngine {
                 let visualElement = book.pages[i].visualElements[j];
                 if (visualElement.type == "text") {
                     let textElement: TextElement = visualElement;
-                    let textElementDiv = document.createElement('div');
-
-                    textElementDiv.classList.add('cr-text');
-                    textElementDiv.style.position = "absolute";
-                    textElementDiv.style.webkitTextStroke = "1px #303030";
-                    textElementDiv.style.color = "#FFFFFF";
-                    textElementDiv.style.textShadow = "0.1rem 0.15rem 0.1rem #303030";
-                    textElementDiv.style.fontFamily = "Quicksand";
-                    textElementDiv.style.fontWeight = "800";
-                    textElementDiv.style.fontSize = "1.7em";
-                    textElementDiv.style.top = textElement.positionY + "%";
-                    textElementDiv.style.left = textElement.positionX + "%";
-                    textElementDiv.style.width = textElement.width + "%";
-                    textElementDiv.style.height = textElement.height + "%";
-                    textElementDiv.innerHTML = textElement.textContentAsHTML;
-                    slide.appendChild(textElementDiv);
+                    
+                    slide.appendChild(this.createTextContainer(textElement));
                 } else if (visualElement.type == "image") {
                     let imageElement: ImageElement = visualElement;
 
@@ -79,26 +82,75 @@ export class PlayBackEngine {
                         continue;
                     }
 
-                    let imageElementDiv = document.createElement('div');
+                    slide.appendChild(this.createImageContainer(imageElement));
+                } else if (visualElement.type == "audio") {
+                    let audioElement: AudioElement = visualElement;
 
-                    imageElementDiv.classList.add('cr-image');
-                    imageElementDiv.style.position = "absolute";
-                    imageElementDiv.style.top = imageElement.positionY + "%";
-                    imageElementDiv.style.left = imageElement.positionX + "%";
-                    imageElementDiv.style.width = imageElement.width + "%";
-                    imageElementDiv.style.height = imageElement.height + "%";
-
-                    let imageElementImg = document.createElement('img');
-                    imageElementImg.src = this.imagesPath + imageElement.imageSource.replace("images/", "");
-                    imageElementImg.style.width = "100%";
-                    imageElementImg.style.height = "100%";
-                    imageElementDiv.appendChild(imageElementImg);
-                    slide.appendChild(imageElementDiv);
+                    slide.appendChild(this.createAudioContainer(audioElement));
                 }
 
                 this.splideHandle.add(slide);
             }
         }
+    }
+
+    createTextContainer(textElement: TextElement): HTMLDivElement {
+        let textElementDiv = document.createElement('div');
+        
+        textElementDiv.classList.add('cr-text');
+        textElementDiv.style.position = "absolute";
+        textElementDiv.style.webkitTextStroke = "1px #303030";
+        textElementDiv.style.color = "#FFFFFF";
+        textElementDiv.style.textShadow = "0.1rem 0.15rem 0.1rem #303030";
+        textElementDiv.style.fontFamily = "Quicksand";
+        textElementDiv.style.fontWeight = "800";
+        textElementDiv.style.fontSize = "1.7em";
+        textElementDiv.style.top = textElement.positionY + "%";
+        textElementDiv.style.left = textElement.positionX + "%";
+        textElementDiv.style.width = textElement.width + "%";
+        textElementDiv.style.height = textElement.height + "%";
+        textElementDiv.innerHTML = textElement.textContentAsHTML;
+
+        return textElementDiv;
+    }
+
+    createImageContainer(imageElement: ImageElement): HTMLDivElement {
+        let imageElementDiv = document.createElement('div');
+
+        imageElementDiv.classList.add('cr-image');
+        imageElementDiv.style.position = "absolute";
+        imageElementDiv.style.top = imageElement.positionY + "%";
+        imageElementDiv.style.left = imageElement.positionX + "%";
+        imageElementDiv.style.width = imageElement.width + "%";
+        imageElementDiv.style.height = imageElement.height + "%";
+
+        let imageElementImg = document.createElement('img');
+        imageElementImg.src = this.imagesPath + imageElement.imageSource.replace("images/", "");
+        imageElementImg.style.width = "100%";
+        imageElementImg.style.height = "100%";
+        imageElementDiv.appendChild(imageElementImg);
+
+        return imageElementDiv;
+    }
+
+    createAudioContainer(audioElement: AudioElement): HTMLDivElement {
+        let audioElementDiv = document.createElement('div');
+
+        audioElementDiv.classList.add('cr-audio');
+        audioElementDiv.style.position = "absolute";
+        // audioElementDiv.style.top = audioElement.positionY + "%";
+        // audioElementDiv.style.left = audioElement.positionX + "%";
+        // audioElementDiv.style.width = audioElement.width + "%";
+        // audioElementDiv.style.height = audioElement.height + "%";
+
+        let audioEement = document.createElement('audio');
+        audioEement.src = this.audioPath + audioElement.audioSrc.replace("audios/", "");
+        audioEement.controls = false;
+        // audioEement.style.width = "100%";
+        // audioEement.style.height = "100%";
+        audioElementDiv.appendChild(audioEement);
+
+        return audioElementDiv;
     }
 
     initializeGDLBook(book: Book) {
